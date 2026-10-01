@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hypertonia Assessment Tool (HAT) – Interactive Scoring</title>
+<meta name="description" content="Free interactive scoring tool for the Hypertonia Assessment Tool (HAT): identify dystonia, spasticity, rigidity, and mixed tone in children.">
+<style>
+:root{--bg:#f5f8fc;--card:#fff;--text:#1d2733;--muted:#5b6b7c;--accent:#1f6fb2;--accent2:#e6f0fa;--border:#cfd9e4;--pos:#b3261e;--neg:#2e7d32}
+@media (prefers-color-scheme:dark){:root{--bg:#10161d;--card:#18212b;--text:#e6edf3;--muted:#9fb0c0;--accent:#5aa9e6;--accent2:#1c2e40;--border:#2c3a48;--pos:#ff8a80;--neg:#81c784}}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.55}
+header{background:var(--accent);color:#fff;padding:28px 20px}
+header h1{margin:0 0 4px;font-size:1.7rem}
+header p{margin:0;opacity:.95}
+main{max-width:820px;margin:0 auto;padding:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:18px}
+h2{margin-top:0;font-size:1.25rem}
+.note{background:var(--accent2);border-left:4px solid var(--accent);padding:10px 14px;border-radius:6px;font-size:.93rem}
+label.chk{display:flex;gap:10px;align-items:flex-start;margin:8px 0;cursor:pointer}
+input[type=checkbox],input[type=radio]{width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
+select,input[type=text]{padding:9px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:1rem;width:100%;max-width:340px}
+button{background:var(--accent);color:#fff;border:0;padding:10px 18px;border-radius:8px;font-size:1rem;cursor:pointer}
+button.sec{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.item{border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px}
+.item h3{margin:0 0 4px;font-size:1.05rem}
+.tag{font-size:.75rem;background:var(--accent2);color:var(--accent);padding:2px 8px;border-radius:99px;margin-left:6px;font-weight:600}
+.opt{display:block;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-top:8px;cursor:pointer}
+.opt:has(input:checked){border-color:var(--accent);background:var(--accent2)}
+.progress{height:8px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:16px}
+.progress div{height:100%;background:var(--accent);width:0;transition:width .2s}
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+th,td{border:1px solid var(--border);padding:8px 10px;text-align:left}
+th{background:var(--accent2)}
+.pos{color:var(--pos);font-weight:700}.neg{color:var(--neg);font-weight:700}
+.big{font-size:1.15rem;padding:12px;border-radius:8px;background:var(--accent2);margin:12px 0}
+.hidden{display:none}
+footer{max-width:820px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:.88rem}
+footer a,.card a{color:var(--accent)}
+@media print{header button,.row,.noprint{display:none!important}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Hypertonia Assessment Tool (HAT)</h1>
+  <p>Interactive scoring tool to differentiate dystonia, spasticity, rigidity, and mixed tone</p>
+</header>
+
+<main>
+  <!-- Step 0: intro -->
+  <section class="card" id="s-intro">
+    <h2>Before you begin</h2>
+    <p class="note">Educational scoring aid for trained clinicians. It does not replace clinical judgment or a full neurological examination. Not for diagnosis by non-clinicians. No data is sent anywhere; everything stays in your browser.</p>
+    <p><strong>Confirm before administering the HAT:</strong></p>
+    <label class="chk"><input type="checkbox" class="pre"> The child is 4 to 19 years old and has hypertonia (increased resistance to passive stretch) in at least one limb.</label>
+    <label class="chk"><input type="checkbox" class="pre"> You have chosen the limb to assess. Each hypertonic limb is assessed and scored separately.</label>
+    <label class="chk"><input type="checkbox" class="pre"> The child is supine on the exam table in comfortable, unrestrictive clothing, with the hand or foot of the limb bare (no splints or socks). If possible, hands rest gently on the upper abdomen.</label>
+    <label class="chk"><input type="checkbox" class="pre"> A roll is under the knees and a pillow under the head.</label>
+    <p class="note">Complete all 7 items on one extremity before moving to the next. It usually takes under five minutes per limb. Items are listed in the suggested order of administration.</p>
+    <div class="row"><button id="startBtn" disabled>Start assessment</button></div>
+  </section>
+
+  <!-- Step 1: setup -->
+  <section class="card hidden" id="s-setup">
+    <h2>Select limb</h2>
+    <p><label for="limb">Limb being assessed</label><br>
+    <select id="limb">
+      <option>Right upper limb</option><option>Left upper limb</option>
+      <option>Right lower limb</option><option>Left lower limb</option>
+    </select></p>
+    <p><label for="label">Optional label (do not enter identifying information)</label><br>
+    <input type="text" id="label" placeholder="e.g., Case A, visit 1"></p>
+    <div class="row"><button id="beginItems">Continue to items</button></div>
+  </section>
+
+  <!-- Step 2: items -->
+  <section class="card hidden" id="s-items">
+    <h2 id="itemsTitle">HAT items</h2>
+    <div class="progress"><div id="bar"></div></div>
+    <div id="itemsHost"></div>
+    <div class="row"><button id="scoreBtn" disabled>Calculate result</button><button class="sec" id="backSetup">Back</button></div>
+  </section>
+
+  <!-- Step 3: results -->
+  <section class="card hidden" id="s-results">
+    <h2>Result: <span id="resLimb"></span></h2>
+    <div id="resBody"></div>
+    <div class="row noprint">
+      <button id="saveBtn">Save limb &amp; assess another</button>
+      <button class="sec" id="printBtn">Print / save as PDF</button>
+      <button class="sec" id="restartBtn">Start over</button>
+    </div>
+  </section>
+
+  <section class="card hidden" id="s-summary">
+    <h2>Saved limbs (this session)</h2>
+    <div id="sumBody"></div>
+  </section>
+
+  <section class="card">
+    <h2>How the HAT is scored</h2>
+    <p>Seven items are each scored 0 (negative) or 1 (positive). A positive item confirms that subtype of hypertonia, and positives in more than one subtype indicate mixed tone.</p>
+    <table>
+      <tr><th>Subtype</th><th>Criterion</th></tr>
+      <tr><td>Dystonia</td><td>Positive on at least one of items 1, 2, or 6</td></tr>
+      <tr><td>Spasticity</td><td>Positive on item 3 and/or 4</td></tr>
+      <tr><td>Rigidity</td><td>Positive on item 5 and/or 7</td></tr>
+      <tr><td>Mixed tone</td><td>More than one subtype present</td></tr>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Official resources</h2>
+    <p>For video demonstrations of each item, case studies, and training, visit the official
+    <a href="https://hollandbloorview.ca/research-education/bloorview-research-institute/outcome-measures/hypertonia-assessment-tool-hat/hat" target="_blank" rel="noopener">HAT page at Holland Bloorview Kids Rehabilitation Hospital</a>.</p>
+  </section>
+</main>
+
+<footer>
+  <p><strong>Credit:</strong> The Hypertonia Assessment Tool was developed by Fehlings D, Switzer L, Jethwa A, Mink J, Macarthur C, Knights S, and Fehlings T. Development and validation: Jethwa A, Mink J, Macarthur C, Knights S, Fehlings T, Fehlings D. Development of the Hypertonia Assessment Tool (HAT): a discriminative tool for hypertonia in children. <em>Dev Med Child Neurol</em>. 2010;52(5):e83-e87. Hypertonia definitions: Sanger TD, et al. Classification and definition of disorders causing hypertonia in childhood. <em>Pediatrics</em>. 2003;111(1):e89-e97.</p>
+  <p>The HAT was developed with support from Holland Bloorview Kids Rehabilitation Hospital, its Foundation, the National Institutes of Health, and CP-NET in partnership with the Ontario Brain Institute. This independent web tool is not affiliated with or endorsed by the HAT authors or Holland Bloorview. Please verify wording and use against the official materials.</p>
+</footer>
+
+<script>
+const ITEMS=[
+{n:1,q:"Increased involuntary movement/postures of the designated limb with tactile stimulus of another body part.",t:"Dystonia",neg:"No involuntary movements or postures observed.",pos:"Involuntary movements or postures observed."},
+{n:2,q:"Increased involuntary movements/postures with purposeful movements of another body part.",t:"Dystonia",neg:"No involuntary movements or postures observed.",pos:"Involuntary movements or postures observed."},
+{n:3,q:"Velocity-dependent resistance to stretch.",t:"Spasticity",neg:"No increased resistance noticed during fast stretch compared to slow stretch.",pos:"Increased resistance noticed during fast stretch compared to slow stretch."},
+{n:4,q:"Presence of a spastic catch.",t:"Spasticity",neg:"No spastic catch noted.",pos:"Spastic catch noted."},
+{n:5,q:"Equal resistance to passive stretch during bi-directional movement of a joint.",t:"Rigidity",neg:"Equal resistance not noted with bi-directional movement.",pos:"Equal resistance noted with bi-directional movement."},
+{n:6,q:"Increased tone with movement of another body part.",t:"Dystonia",neg:"No increased tone noted with purposeful movement.",pos:"Greater tone noted with purposeful movement."},
+{n:7,q:"Maintenance of limb position after passive movement.",t:"Rigidity",neg:"Limb returns (partially or fully) to original position.",pos:"Limb remains in final position of stretch."}
+];
+const $=id=>document.getElementById(id);
+const show=id=>["s-intro","s-setup","s-items","s-results"].forEach(s=>$(s).classList.toggle("hidden",s!==id));
+let answers={},saved=[],current=null;
+
+// intro gating
+const pres=[...document.querySelectorAll(".pre")];
+pres.forEach(c=>c.onchange=()=>$("startBtn").disabled=!pres.every(x=>x.checked));
+$("startBtn").onclick=()=>show("s-setup");
+$("backSetup").onclick=()=>show("s-setup");
+
+// build items
+const host=$("itemsHost");
+ITEMS.forEach(it=>{
+  const d=document.createElement("div");d.className="item";
+  d.innerHTML=`<h3>${it.n}. ${it.q}</h3>
+  <label class="opt"><input type="radio" name="i${it.n}" value="0"> <strong>0 – Negative:</strong> ${it.neg}</label>
+  <label class="opt"><input type="radio" name="i${it.n}" value="1"> <strong>1 – Positive:</strong> ${it.pos}</label>`;
+  host.appendChild(d);
+  d.querySelectorAll("input").forEach(r=>r.onchange=()=>{answers[it.n]=+r.value;update();});
+});
+function update(){
+  const k=Object.keys(answers).length;
+  $("bar").style.width=(k/7*100)+"%";
+  $("scoreBtn").disabled=k<7;
+}
+function reset(){
+  answers={};document.querySelectorAll("#itemsHost input").forEach(r=>r.checked=false);update();
+}
+$("beginItems").onclick=()=>{
+  $("itemsTitle").textContent="HAT items – "+$("limb").value;
+  reset();show("s-items");window.scrollTo(0,0);
+};
+
+function compute(){
+  const p=n=>answers[n]===1;
+  const dys=p(1)||p(2)||p(6), spa=p(3)||p(4), rig=p(5)||p(7);
+  const count=[dys,spa,rig].filter(Boolean).length;
+  return {dys,spa,rig,mixed:count>1,none:count===0};
+}
+function summaryText(r){
+  if(r.none) return "No hypertonia subtype identified (all items negative).";
+  const parts=[r.dys&&"dystonia",r.spa&&"spasticity",r.rig&&"rigidity"].filter(Boolean);
+  return r.mixed?"Mixed tone: "+parts.join(" + "):"Pure "+parts[0];
+}
+const yn=b=>b?'<span class="pos">Yes</span>':'<span class="neg">No</span>';
+$("scoreBtn").onclick=()=>{
+  const r=compute();
+  const lbl=$("label").value.trim();
+  current={limb:$("limb").value,label:lbl,answers:{...answers},r,text:summaryText(r)};
+  $("resLimb").textContent=current.limb+(lbl?" ("+lbl+")":"");
+  let rows=ITEMS.map(it=>`<tr><td>${it.n}</td><td>${it.q}</td><td>${it.t}</td><td>${answers[it.n]}</td></tr>`).join("");
+  $("resBody").innerHTML=`<div class="big"><strong>${current.text}</strong></div>
+  <table><tr><th>Subtype</th><th>Present?</th></tr>
+  <tr><td>Dystonia (items 1, 2, 6)</td><td>${yn(r.dys)}</td></tr>
+  <tr><td>Spasticity (items 3, 4)</td><td>${yn(r.spa)}</td></tr>
+  <tr><td>Rigidity (items 5, 7)</td><td>${yn(r.rig)}</td></tr>
+  <tr><td>Mixed tone</td><td>${yn(r.mixed)}</td></tr></table>
+  <h3>Item scores</h3>
+  <table><tr><th>#</th><th>Item</th><th>Type</th><th>Score</th></tr>${rows}</table>
+  <p class="note">Interpret alongside the full clinical picture. Each limb should be scored separately.</p>`;
+  show("s-results");window.scrollTo(0,0);
+};
+$("saveBtn").onclick=()=>{
+  saved.push(current);renderSaved();
+  $("label").value="";show("s-setup");window.scrollTo(0,0);
+};
+function renderSaved(){
+  $("s-summary").classList.toggle("hidden",!saved.length);
+  $("sumBody").innerHTML="<table><tr><th>Limb</th><th>Dystonia</th><th>Spasticity</th><th>Rigidity</th><th>Result</th></tr>"+
+   saved.map(s=>`<tr><td>${s.limb}${s.label?" ("+s.label.replace(/</g,"&lt;")+")":""}</td><td>${yn(s.r.dys)}</td><td>${yn(s.r.spa)}</td><td>${yn(s.r.rig)}</td><td>${s.text}</td></tr>`).join("")+"</table>";
+}
+$("printBtn").onclick=()=>window.print();
+$("restartBtn").onclick=()=>{if(confirm("Clear all results and start over?")){saved=[];renderSaved();reset();$("label").value="";show("s-intro");window.scrollTo(0,0);}};
+</script>
+</body>
+</html>
