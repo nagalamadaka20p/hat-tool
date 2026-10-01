@@ -1,0 +1,1 @@
+This is a tool to help people distinguish between different types of hypertonia in pediatric populations. It is an interactive tool based off of the validated work by Fehlings, D., Switzer, L., Jethwa, A., Mink, J., Macarthur, C., Knights, S., & Fehlings, T.
